@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule 
+xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" 
+xmlns:http="http://www.mulesoft.org/schema/mule/http"
+xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<!-- db:config name="MySQL_Database_Config" doc:name="Database Config" doc:id="b32ed73a-ab2c-4e82-832a-db1602104270" >
+		<db:my-sql-connection host="${settings.dbms.host}" port="${settings.dbms.port}" user="${settings.dbms.principal}" password="${settings.dbms.credential}" database="${settings.dbms.databaseName}">
+			<reconnection />
+		</db:my-sql-connection>
+	</db:config-->
+	<http:request-config name="FaunaDB_HTTP_Request_configuration" doc:name="HTTP Request configuration" doc:id="642e7f46-4b5b-4b16-aa71-25a80444656a" >
+		<http:request-connection host="${settings.fauna-db.host}" port="${settings.fauna-db.port}" usePersistentConnections="false" protocol="HTTPS"/>
+		<http:default-headers >
+			<http:default-header key="Authorization" value='#["Bearer " ++ Mule::p("settings.fauna-db.clientSecret")]' />
+		</http:default-headers>
+	</http:request-config>
+	<sub-flow name="incrementGamesPlayedForPuzzle" doc:id="0586e118-c7f7-41e5-8523-0b0a36ff1674" >
+		<ee:transform doc:name="Define payload" doc:id="1e60747c-6d6c-4cfc-91d2-80d7c1154cf9" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json indent=false
+var numLetters = vars.numLetters
+---
+{
+  "call": {
+    "function": "IncrementGamesPlayed"
+  },
+  "arguments": [
+    "Jotto2020",
+    numLetters
+  ]
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<try doc:name="Try" doc:id="9cc5cedf-febd-4019-b06b-ec03f8023be6" >
+			<http:request method="POST" doc:name="Increment value of gamesPlayed field" doc:id="22623f36-767e-4ac7-acc3-46e2af60e301" config-ref="FaunaDB_HTTP_Request_configuration" path="/" />
+			<error-handler >
+				<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="3d934216-2200-4156-918c-6e8bd2b40aa6" />
+			</error-handler>
+		</try>
+	</sub-flow>
+	<sub-flow name="updateLeastTurnsForPuzzle" doc:id="7cc0f1bb-945c-4218-a6b2-5d4e9e14ec0d" >
+		<ee:transform doc:name="Define payload" doc:id="5f4a6b91-1830-4c19-b3b4-44b4d0d728e8" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json indent=false
+var numLetters = vars.numLetters
+var turnsTaken = vars.turnsTaken
+---
+{
+  "call": {
+    "function": "UpdateLeastTurns"
+  },
+  "arguments": [
+    "Jotto2020",
+    numLetters,
+    turnsTaken
+  ]
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<try doc:name="Try" doc:id="617a2ddd-9a5a-4417-bd59-92e8c4ae3b62" >
+			<http:request method="POST" doc:name="Update value of leastTurns field" doc:id="efd3cf08-f82a-4040-9779-5c564ab0c25a" config-ref="FaunaDB_HTTP_Request_configuration" path="/" />
+			<error-handler >
+				<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="5fe1a13e-394a-4297-a3b4-995e46721624" />
+			</error-handler>
+		</try>
+	</sub-flow>
+</mule>

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:crypto="http://www.mulesoft.org/schema/mule/crypto" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/crypto http://www.mulesoft.org/schema/mule/crypto/current/mule-crypto.xsd">
+	<flow name="encryptPayloadEndpoint" doc:id="df364efd-713f-4122-8aee-9be188e82f46" >
+		<http:listener doc:name="Listener" doc:id="bb491f40-d8e0-4df1-8519-ab2ec844ad78" config-ref="HTTP_Listener_config" path="/encrypt"/>
+		<flow-ref doc:name="encryptPayload" doc:id="5420d8cc-229a-4ed8-8ab2-a544f6c656be" name="encryptPayload" />
+		<logger level="INFO" doc:name="Logger" doc:id="dddefdf8-d747-4013-b68f-e81fab780c7b" message="#[payload]"/>
+	</flow>
+	<flow name="decryptPayloadEndpoint" doc:id="3b36ac1c-fc7d-41a9-8ed1-825fb24d4508" >
+		<http:listener doc:name="Listener" doc:id="171ebe3c-d228-4ef5-a613-9321711b8ef3" config-ref="HTTP_Listener_config" path="/decrypt" />
+		<flow-ref doc:name="decryptPayload" doc:id="1fe65b03-93ab-41ba-9606-3194cf5cb0c2" name="decryptPayload" />
+		<logger level="INFO" doc:name="Logger" doc:id="312dc670-02c6-4908-9ac0-b2abe70f6894" message="#[payload]" />
+	</flow>
+	<flow name="selectPuzzleEndpoint" doc:id="a4abe670-2bcd-4ca1-86d1-43a06f22e453" >
+		<http:listener doc:name="Listener" doc:id="ff6d7ee5-8af0-4e37-940f-e44efa23d21b" config-ref="HTTP_Listener_config" path="/puzzle"/>
+		<ee:transform doc:name="Set variables" doc:id="c3c6b17e-e528-43e0-9f44-b6e6b7b42dbb" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="puzzleIndex" ><![CDATA[%dw 2.0
+output application/java
+---
+5]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="preparePuzzle" doc:id="79a6b673-9d2b-4b6b-805e-7d1b619e9634" name="preparePuzzle"/>
+		<logger level="INFO" doc:name="Logger" doc:id="826ad806-2f9d-431b-8a6d-dfb9574a4dc0" message="#[payload]" />
+	</flow>
+	<flow name="playerTurnEndpoint" doc:id="46ababc5-53f7-4568-bc38-8e6d875bf068" >
+		<http:listener doc:name="Listener" doc:id="e64f370e-fb87-4b7b-9ba9-a005d4c8b847" config-ref="HTTP_Listener_config" path="/guess"/>
+		<flow-ref doc:name="decryptPayload" doc:id="65b1278b-bb66-41a3-83f7-bf9de562dd43" name="decryptPayload" target="gameState"/>
+	</flow>
+</mule>

@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns:validation="http://www.mulesoft.org/schema/mule/validation" 
+xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+xmlns="http://www.mulesoft.org/schema/mule/core"
+xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mule/validation/current/mule-validation.xsd">
+	<sub-flow name="formatErrorPayload" doc:id="db3c4114-ee94-4d82-8f5d-c0c8fd719ece">
+    	<ee:transform doc:name="Build errorResponse" doc:id="9ad85319-2f01-4a0e-a921-fa1f65b25093">
+      		<ee:message>
+        		<ee:set-payload><![CDATA[%dw 2.0
+output application/json skipNullOn="everywhere", duplicateKeyAsArray=true
+---
+modules::shared_functions::formatErrorResponse(error, vars)]]></ee:set-payload>
+      		</ee:message>
+      		<ee:variables>
+      		</ee:variables>
+    	</ee:transform>
+	</sub-flow>
+	<sub-flow name="prepareGameStateResponse" doc:id="49631716-c758-42e7-8689-690cc9b3bc79" >
+		<ee:transform doc:name="Update outbound headers" doc:id="fa534765-7998-456f-8c1b-5dc4e00c9d31">
+			<ee:message>
+			</ee:message>
+			<ee:variables>
+				<ee:set-variable variableName="outboundHeaders"><![CDATA[%dw 2.0
+output application/java
+var gameState = write(vars.gameState default {}, 'application/json')
+var encodedGameState = dw::core::Binaries::toBase64(gameState)
+var outboundHeaders = vars.outboundHeaders default {}
+---
+dw::core::Objects::mergeWith(outboundHeaders, {
+	"x-session": encodedGameState
+})]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<ee:transform doc:name="Enrich response payload with session token" doc:id="94f36173-cd20-4bdb-9339-9e69854bf6e7" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+dw::core::Objects::mergeWith(payload default {}, {
+	"token": vars.outboundHeaders."x-session"
+})]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</sub-flow>
+	<sub-flow name="preparePuzzle" doc:id="68a8bd0e-32a8-4eb6-a9fa-406729f6be5d" >
+		<flow-ref doc:name="incrementGamesPlayedForPuzzle" doc:id="0f4c6cc0-0a2f-4d6e-a91c-ef7f88c406b8" name="incrementGamesPlayedForPuzzle" target="gamesPlayed" targetValue="#[(((payload default {}).resource default {}).data default {}).gamesPlayed default 0]"/>
+		<ee:transform doc:name="Initialize game state" doc:id="70446a97-5a11-4cef-be4b-374cb9b63d8c" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="gameState" ><![CDATA[%dw 2.0
+import modules::shared_functions as shared
+output application/json
+var numLetters = vars.numLetters default 5
+var maxTurns = shared::computeMaximumTurns(numLetters)
+var numPuzzles = shared::getCountOfPuzzleWords(numLetters)
+var puzzleIndex = (vars.gamesPlayed default randomInt(numPuzzles)) mod numPuzzles
+var puzzleUuid = uuid()
+---
+{
+  "stats": {
+  	"puzzleUuid": puzzleUuid,
+  	"puzzleIndex": puzzleIndex,
+  	"puzzleLength": numLetters,
+  	"gameOver": false,
+  	"victory": false,
+  	"maximumTurns": maxTurns,
+  	"turnsRemaining": maxTurns
+  },
+  "turnsTaken": []
+}]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+	</sub-flow>
+	<sub-flow name="updateStateForTurn" doc:id="180c8669-4615-49f4-96dd-24e0aae5f4c7" >
+		<ee:transform doc:name="Update game state" doc:id="2ac1133c-5c1e-48bc-ac4b-52bae4be2fea" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="gameState" ><![CDATA[%dw 2.0
+import modules::shared_functions as shared
+output application/json
+var token = (vars.outboundHeaders default {})."x-session"
+var gameState = vars.gameState default {}
+var puzzleWord = vars.puzzleWord default ""
+var guess = lower(vars.guess default "")
+var results = shared::computeResults(guess, puzzleWord) default {}
+var result = results.mask default shared::deriveDefaultMaskText(puzzleWord)
+var turnsTaken = gameState.turnsTaken default []
+var gameStats = shared::computeGameStats(gameState, puzzleWord, guess)
+---
+dw::core::Objects::mergeWith(gameState, {
+	"stats": gameStats,
+	"token": token,
+	"turnsTaken": flatten([turnsTaken, [
+		({
+			"guess": guess,
+			"result": result
+		}) if (!isBlank(guess))
+	]])
+})]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<ee:transform doc:name="Set response payload" doc:id="452902b5-6b61-4994-91d1-8c14ad869b15">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+var gameState = vars.gameState default {}
+---
+gameState]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</sub-flow>
+	<sub-flow name="validateGameNotOver" doc:id="dce5f16e-cf98-49f0-9a5f-79f7df345c63" >
+		<try doc:name="Try" doc:id="839a7f5a-e727-4663-83fc-5be052786b8c" >
+			<validation:is-false doc:name="Is false" doc:id="cf800a0b-a76c-4630-a26a-d5cd7bc48e01" message="#['This game [' 
+++ vars.gameState.stats.puzzleUuid 
+++ '] is over.  The word was &gt;&gt;&gt; ' 
+++ modules::shared_functions::retrievePuzzleWord(vars.gameState.stats.puzzleLength, vars.gameState.stats.puzzleIndex) 
+++ ' &lt;&lt;&lt; Please start a new game to play again.']" expression="#[modules::shared_functions::isGameOver(vars.gameState.stats)]" >
+				<error-mapping sourceType="VALIDATION:INVALID_BOOLEAN" targetType="APP:GAME_OVER" />
+			</validation:is-false>
+			<error-handler >
+				<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="a7f10f24-4165-44c9-977d-cb1918f8a789" type="APP:GAME_OVER">
+					<ee:transform doc:name="Set HTTP response variables" doc:id="9eb2c02b-d929-41b8-a49b-b61685633c66" >
+						<ee:message />
+						<ee:variables >
+							<ee:set-variable variableName="httpStatus" ><![CDATA[%dw 2.0
+output application/java
+---
+400]]></ee:set-variable>
+							<ee:set-variable variableName="httpReason" ><![CDATA[%dw 2.0
+output application/java
+---
+"GAME OVER"]]></ee:set-variable>
+						</ee:variables>
+					</ee:transform>
+				</on-error-propagate>
+			</error-handler>
+		</try>
+	</sub-flow>
+	<sub-flow name="validateGuess" doc:id="6d991c32-bd34-4681-8ace-fc22b4e23272" >
+		<try doc:name="Try" doc:id="29074bcd-8d21-42eb-8d2f-09b94df67f97" >
+			<validation:validate-size doc:name="Validate size" doc:id="ed833158-78da-4174-90a2-0b01a38492f2" value='#[(vars.guess default "")]' min="#[vars.gameState.stats.puzzleLength as Number]" max="#[vars.gameState.stats.puzzleLength as Number]" message="#['The length of the guess was ' ++ sizeOf(vars.guess default '') ++ ', but the length of a guess for this puzzle should be ' ++ vars.gameState.stats.puzzleLength ++ ' letters.']">
+			<error-mapping sourceType="VALIDATION:INVALID_SIZE" targetType="APP:INVALID_SIZE" />
+		</validation:validate-size>
+			<error-handler >
+				<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="e56d2d62-6fc7-44e2-9aae-0bfd57789289" type="APP:INVALID_SIZE">
+					<ee:transform doc:name="Set HTTP response variables" doc:id="01fcc9fb-35c1-4c81-a0e2-85563bd3f5dc" >
+						<ee:message >
+						</ee:message>
+						<ee:variables >
+							<ee:set-variable variableName="httpStatus" ><![CDATA[%dw 2.0
+output application/java
+---
+400]]></ee:set-variable>
+							<ee:set-variable variableName="httpReason" ><![CDATA[%dw 2.0
+output application/java
+---
+"INVALID SIZE"]]></ee:set-variable>
+						</ee:variables>
+					</ee:transform>
+				</on-error-propagate>
+			</error-handler>
+		</try>
+	</sub-flow>
+</mule>

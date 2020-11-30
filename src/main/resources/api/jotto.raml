@@ -1,0 +1,35 @@
+#%RAML 1.0
+title: Jotto Game API
+version: 1
+baseUri:  http://localhost:8081
+
+/game/jotto:
+  post:
+    queryParameters:
+      letters:
+        type: number
+        enum: [2, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+
+    responses:
+      201:
+        headers:
+          x-session:
+            type: string
+
+  /guess/{guess}:
+    uriParameters:
+      guess:
+        description: The textual guess a player would like to make for this turn.
+        type: string
+    put:
+      headers:
+        x-session:
+          type: string
+      responses:
+        200:
+          headers:
+            x-session:
+              type: string
+          body:
+            application/json:
+              

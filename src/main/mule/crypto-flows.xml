@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:crypto="http://www.mulesoft.org/schema/mule/crypto" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/crypto http://www.mulesoft.org/schema/mule/crypto/current/mule-crypto.xsd">
+	<sub-flow name="encryptPayload" doc:id="779a3f4b-1bd5-4228-8158-4b0779205c80" >
+		<crypto:jce-encrypt-pbe doc:name="Jce encrypt pbe" doc:id="509a4177-da7e-41a3-8b4e-1b9d97857438" password="${settings.crypto.key}" />
+		<ee:transform doc:name="Convert to Base64 string" doc:id="b52c1d25-ecf4-4d23-a65e-c9f08bfb2fa7">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+import * from dw::core::Binaries
+output text/plain
+---
+toBase64(payload)]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</sub-flow>
+	<sub-flow name="decryptPayload" doc:id="aec82b7e-a988-4de4-9597-95a9fb4766ee" >
+		<ee:transform doc:name="Decode Base64 string" doc:id="f93a74b7-cdf2-4889-b604-f2a2a826e40e">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+import * from dw::core::Binaries
+output application/java
+var source = payload default ""
+---
+fromBase64(source)]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<crypto:jce-decrypt-pbe doc:name="Jce decrypt pbe" doc:id="14d4da19-b967-4250-8bb6-7e0632ea9835" password="${settings.crypto.key}"/>
+		<ee:transform doc:name="Convert to JSON" doc:id="b7e9b694-0205-4112-9692-968a36893326">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+read(payload, 'application/json')]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</sub-flow>
+</mule>
