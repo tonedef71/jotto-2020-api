@@ -2,15 +2,6 @@ settings:
   connection:
     http:
       port: "8081"
-    https:
-      port: "8888"
-      tls:
-        keystore:
-          alias: "jotto2020"
-          credential: "notasecret"
-          keypass: "notasecret"
-          path: "keyStores/jotto2020.p12"
-          type: "pkcs12"
   crypto:
     key: "1qa2ws3ed4rf5tg6yh"
     rotationLength: "12"

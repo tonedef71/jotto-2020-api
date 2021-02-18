@@ -1,86 +1,86 @@
 (function (scope, bundled) {
-	
-	var   enyo     = scope.enyo || (scope.enyo = {})
-		, manifest = enyo.__manifest__ || (defineProperty(enyo, '__manifest__', {value: {}}) && enyo.__manifest__)
-		, exported = enyo.__exported__ || (defineProperty(enyo, '__exported__', {value: {}}) && enyo.__exported__)
-		, require  = enyo.require || (defineProperty(enyo, 'require', {value: enyoRequire}) && enyo.require)
-		, local    = bundled()
-		, entries;
+  
+  var   enyo     = scope.enyo || (scope.enyo = {})
+    , manifest = enyo.__manifest__ || (defineProperty(enyo, '__manifest__', {value: {}}) && enyo.__manifest__)
+    , exported = enyo.__exported__ || (defineProperty(enyo, '__exported__', {value: {}}) && enyo.__exported__)
+    , require  = enyo.require || (defineProperty(enyo, 'require', {value: enyoRequire}) && enyo.require)
+    , local    = bundled()
+    , entries;
 
-	// below is where the generated entries list will be assigned if there is one
-	entries = ['index'];
+  // below is where the generated entries list will be assigned if there is one
+  entries = ['index'];
 
 
-	if (local) {
-		Object.keys(local).forEach(function (name) {
-			var value = local[name];
-			if (manifest.hasOwnProperty(name)) {
-				if (!value || !(value instanceof Array)) return;
-			}
-			manifest[name] = value;
-		});
-	}
+  if (local) {
+    Object.keys(local).forEach(function (name) {
+      var value = local[name];
+      if (manifest.hasOwnProperty(name)) {
+        if (!value || !(value instanceof Array)) return;
+      }
+      manifest[name] = value;
+    });
+  }
 
-	function defineProperty (o, p, d) {
-		if (Object.defineProperty) return Object.defineProperty(o, p, d);
-		o[p] = d.value;
-		return o;
-	}
-	
-	function enyoRequire (target) {
-		if (!target || typeof target != 'string') return undefined;
-		if (exported.hasOwnProperty(target))      return exported[target];
-		var   request = enyo.request
-			, entry   = manifest[target]
-			, exec
-			, map
-			, ctx
-			, reqs
-			, reqr;
-		if (!entry) throw new Error('Could not find module "' + target + '"');
-		if (!(entry instanceof Array)) {
-			if (typeof entry == 'object' && (entry.source || entry.style)) {
-				throw new Error('Attempt to require an asynchronous module "' + target + '"');
-			} else if (typeof entry == 'string') {
-				throw new Error('Attempt to require a bundle entry "' + target + '"');
-			} else {
-				throw new Error('The shared module manifest has been corrupted, the module is invalid "' + target + '"');
-			}
-		}
-		exec = entry[0];
-		map  = entry[1];
-		if (typeof exec != 'function') throw new Error('The shared module manifest has been corrupted, the module is invalid "' + target + '"');
-		ctx  = {exports: {}};
-		if (request) {
-			if (map) {
-				reqs = function (name) {
-					return request(map.hasOwnProperty(name) ? map[name] : name);
-				};
-				defineProperty(reqs, 'isRequest', {value: request.isRequest});
-			} else reqs = request;
-		}
-		reqr = !map ? require : function (name) {
-			return require(map.hasOwnProperty(name) ? map[name] : name);
-		};
-		exec(
-			ctx,
-			ctx.exports,
-			scope,
-			reqr,
-			reqs
-		);
-		return exported[target] = ctx.exports;
-	}
+  function defineProperty (o, p, d) {
+    if (Object.defineProperty) return Object.defineProperty(o, p, d);
+    o[p] = d.value;
+    return o;
+  }
+  
+  function enyoRequire (target) {
+    if (!target || typeof target != 'string') return undefined;
+    if (exported.hasOwnProperty(target))      return exported[target];
+    var   request = enyo.request
+      , entry   = manifest[target]
+      , exec
+      , map
+      , ctx
+      , reqs
+      , reqr;
+    if (!entry) throw new Error('Could not find module "' + target + '"');
+    if (!(entry instanceof Array)) {
+      if (typeof entry == 'object' && (entry.source || entry.style)) {
+        throw new Error('Attempt to require an asynchronous module "' + target + '"');
+      } else if (typeof entry == 'string') {
+        throw new Error('Attempt to require a bundle entry "' + target + '"');
+      } else {
+        throw new Error('The shared module manifest has been corrupted, the module is invalid "' + target + '"');
+      }
+    }
+    exec = entry[0];
+    map  = entry[1];
+    if (typeof exec != 'function') throw new Error('The shared module manifest has been corrupted, the module is invalid "' + target + '"');
+    ctx  = {exports: {}};
+    if (request) {
+      if (map) {
+        reqs = function (name) {
+          return request(map.hasOwnProperty(name) ? map[name] : name);
+        };
+        defineProperty(reqs, 'isRequest', {value: request.isRequest});
+      } else reqs = request;
+    }
+    reqr = !map ? require : function (name) {
+      return require(map.hasOwnProperty(name) ? map[name] : name);
+    };
+    exec(
+      ctx,
+      ctx.exports,
+      scope,
+      reqr,
+      reqs
+    );
+    return exported[target] = ctx.exports;
+  }
 
-	// in occassions where requests api are being used, below this comment that implementation will
-	// be injected
-	
+  // in occasions where requests api are being used, below this comment that implementation will
+  // be injected
+  
 
-	// if there are entries go ahead and execute them
-	if (entries && entries.forEach) entries.forEach(function (name) { require(name); });
+  // if there are entries go ahead and execute them
+  if (entries && entries.forEach) entries.forEach(function (name) { require(name); });
 })(this, function () {
-	// this allows us to protect the scope of the modules from the wrapper/env code
-	return {'src/components/Cell':[function (module,exports,global,require,request){
+  // this allows us to protect the scope of the modules from the wrapper/env code
+  return {'src/components/Cell':[function (module,exports,global,require,request){
 var
   kind = require("enyo/kind"),
   Control = require("enyo/Control");
@@ -321,11 +321,8 @@ var Unicode = {
   downwardArrow: "\u2193"
 };
 
-var backgroundColor = "#053120";
-
 module.exports = kind({
   name: "UIKeyboard",
-  style: "background-color: " + backgroundColor,
   components: [
     { 
       kind: Signals,
@@ -400,7 +397,7 @@ module.exports = kind({
   },
   rendered: function() {
     this.inherited(arguments);
-    this.refresh();
+    //this.refresh();
   },
   processKeypress(key) {
     var ch = key;
@@ -444,7 +441,7 @@ module.exports = kind({
     if (this.guessData.length > 0) {
       this.guessData = [];
       this.$.prompt.setContent(Unicode.nbsp);
-      this.refresh();
+      //this.refresh();
     }
   },
   setPrompt: function(guess) {
@@ -620,8 +617,7 @@ module.exports = kind({
       handleAs: "json",
       onResponse: "processGameServerResponse",
       onError: "processError",
-      //url: "http://localhost:8081/api/game/jotto",
-      url: "http://jotto2020.us-e2.cloudhub.io/api/game/jotto",
+      url: "${gameUrl}/api/game/jotto",
       method: "POST",
       sync: false
     },
@@ -632,8 +628,7 @@ module.exports = kind({
       handleAs: "json",
       onResponse: "processGameServerResponse",
       onError: "processError",
-      //url: "http://localhost:8081/api/game/jotto/guess/",
-      url: "http://jotto2020.us-e2.cloudhub.io/api/game/jotto/guess/",
+      url: "${gameUrl}/api/game/jotto/guess/",
       method: "PUT",
       sync: false
     },
@@ -643,9 +638,8 @@ module.exports = kind({
       components: [
         {
           kind: EnyoImage,
-          /** style: "width:165px; height:55px", */
+          /** style: "width: 102px; height: 49px", */
           src: "assets/jotto_logo_small.png",
-          placeholder: EnyoImage.placeholder,
           alt: "Jotto Logo"
         },
         {
@@ -713,8 +707,8 @@ module.exports = kind({
             },
             {
               kind: JottoWord,
-              name: "jottoWord",
-              fit: true
+              name: "jottoWord"//,
+              //fit: true
             }
           ]
         },
@@ -735,7 +729,7 @@ module.exports = kind({
                 },
                 {
                   kind: JottoResult,
-                  fit: true,
+                  //fit: true,
                   result: "***o.",
                   guess: "jotox"
                 }
@@ -826,7 +820,7 @@ module.exports = kind({
     }
   ],
   create: function() {
-    this.log("MainView::create()");
+    //this.log("MainView::create()");
     this.inherited(arguments);
     this.data = [];
     this.guessHistory = null;
@@ -837,11 +831,11 @@ module.exports = kind({
     this.solution = "";
   },
   destroy: function() {
-    this.log("MainView::destroy()");
+    //this.log("MainView::destroy()");
     this.inherited(arguments);
   },
   rendered: function() {
-    this.log("MainView::rendered()");
+    //this.log("MainView::rendered()");
     this.inherited(arguments);
     this.$.guesses.setCount((this.data || []).length);
   },
@@ -911,7 +905,7 @@ module.exports = kind({
     }
   },
   invokeNewGameWebService: function(numLetters) {
-    this.log("invokeNewGameWebService: " + numLetters);
+    //this.log("invokeNewGameWebService: " + numLetters);
     var indexOfQuote = this.$.newGameWebService.url.lastIndexOf("?");
     var url = (indexOfQuote >= 0) ? this.$.newGameWebService.url.substring(0, indexOfQuote) : this.$.newGameWebService.url;
     url = url + "?letters=" + numLetters;
@@ -920,7 +914,7 @@ module.exports = kind({
     this.showSpinnerPopup();
   },
   invokeNewGuessWebService: function(guessText) {
-    this.log("invokeNewGuessWebService: " + guessText);
+    //this.log("invokeNewGuessWebService: " + guessText);
     var indexOfSlash = this.$.newGuessWebService.url.lastIndexOf("/");
     var url = (indexOfSlash >= 0) ? this.$.newGuessWebService.url.substring(0, indexOfSlash) : this.$.newGuessWebService.url;
     this.$.newGuessWebService.url = url + "/" + guessText;
@@ -931,7 +925,7 @@ module.exports = kind({
   },
   finishGuess: function(inSender, inEvent) {
     var guessText = inEvent.guess;
-    this.log("finishGuess: " + guessText);
+    //this.log("finishGuess: " + guessText);
     if (null == this.guessHistory[guessText]) {
       this.invokeNewGuessWebService(guessText);
     }
@@ -947,7 +941,7 @@ module.exports = kind({
     this.invokeNewGameWebService(numLetters);
   },
   setupGuess: function(inSender, inEvent) {
-    this.log("setupGuess...");
+    //this.log("setupGuess...");
     var index = inEvent.index;
     var item = inEvent.item;
     var datum = this.data[index];
@@ -962,7 +956,7 @@ module.exports = kind({
     return true;
   },
   newGame: function(inSender, inEvent) {
-    this.log("newGame click...");
+    //this.log("newGame click...");
     
     var gameStatus = this.get("gameStatus");
     if (gameStatus != 1) {
@@ -1079,7 +1073,7 @@ ready(function () {
 });
 
 },{'./src/App':'src/App'}]
-	};
+  };
 
 });
 //# sourceMappingURL=jotto-2020.js.map

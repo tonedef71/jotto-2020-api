@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<mule xmlns:tls="http://www.mulesoft.org/schema/mule/tls" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation=" http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
-http://www.mulesoft.org/schema/mule/tls http://www.mulesoft.org/schema/mule/tls/current/mule-tls.xsd">
-  <configuration-properties doc:name="Configuration properties" doc:id="3cc67e31-ed97-4273-b637-f30067000beb" file="config\configuration.yaml"/>
-
-  <tls:context name="TLS_Context" doc:name="TLS Context" doc:id="387caa10-d646-4eb0-b22a-be7be777fc1c">
-    <tls:key-store type="${settings.connection.https.tls.keystore.type}" path="${settings.connection.https.tls.keystore.path}" password="${settings.connection.https.tls.keystore.credential}" keyPassword="${settings.connection.https.tls.keystore.keypass}" alias="${settings.connection.https.tls.keystore.alias}"/>
-  </tls:context>
+<mule 
+xmlns:http="http://www.mulesoft.org/schema/mule/http" 
+xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation=" 
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd 
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd">
+  <configuration-properties doc:name="Configuration properties" doc:id="3cc67e31-ed97-4273-b637-f30067000beb" file="config/configuration.yaml"/>
 
   <!-- HTTP(S) listener configurations -->
   <http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="3cd65fe2-5114-4f62-afdc-2a0f8a686b0c">
@@ -18,18 +19,4 @@ http://www.mulesoft.org/schema/mule/tls http://www.mulesoft.org/schema/mule/tls/
       </http:cors-interceptor>
     </http:listener-interceptors>
   </http:listener-config>
-
-  <!-- Fails to deploy in CloudHub -->
-<!--  
-  <http:listener-config name="HTTPS_Listener_config" doc:name="HTTPS Listener config" doc:id="6445c378-4c07-4b0d-b30e-5e6baecf2f69">
-    <http:listener-connection protocol="HTTPS" host="0.0.0.0" port="${settings.connection.https.port}" tlsContext="TLS_Context"/>
-    <http:listener-interceptors>
-      <http:cors-interceptor>
-        <http:origins>
-          <http:public-resource/>
-        </http:origins>
-      </http:cors-interceptor>
-    </http:listener-interceptors>
-  </http:listener-config>
--->
 </mule>
