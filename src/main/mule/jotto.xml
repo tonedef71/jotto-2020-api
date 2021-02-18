@@ -2,7 +2,7 @@
 <mule xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd  http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
     <apikit:config name="jotto-config" api="jotto.raml" outboundHeadersMapName="outboundHeaders" httpStatusVarName="httpStatus" />
     <flow name="jotto-main">
-        <http:listener config-ref="HTTP_Listener_config" path="/api/*">
+        <http:listener config-ref="HTTPS_Listener_config" path="/api/*">
             <http:response statusCode="#[vars.httpStatus default 200]" reasonPhrase='#[vars.httpReason default "OK"]'>
                 <http:headers><![CDATA[#[vars.outboundHeaders default {}]]]></http:headers>
             </http:response>
@@ -95,13 +95,13 @@ output application/json
         </error-handler>
     </flow>
     <flow name="jotto-console">
-        <http:listener config-ref="HTTP_Listener_config" path="/console/*">
+        <http:listener config-ref="HTTPS_Listener_config" path="/console/*">
             <http:response statusCode="#[vars.httpStatus default 200]">
-                <http:headers>#[vars.outboundHeaders default {}]</http:headers>
+                <http:headers><![CDATA[#[vars.outboundHeaders default {}]]]></http:headers>
             </http:response>
             <http:error-response statusCode="#[vars.httpStatus default 500]">
-                <http:body>#[payload]</http:body>
-                <http:headers>#[vars.outboundHeaders default {}]</http:headers>
+                <http:body><![CDATA[#[payload]]]></http:body>
+                <http:headers><![CDATA[#[vars.outboundHeaders default {}]]]></http:headers>
             </http:error-response>
         </http:listener>
         <apikit:console config-ref="jotto-config" />
@@ -122,7 +122,7 @@ output application/json
         </error-handler>
     </flow>
     <flow name="staticHtml" doc:id="515573fc-1bea-4cc6-8058-1f03fa8c9a75" >
-		<http:listener doc:name="Listener" doc:id="a5063ade-3085-4660-a1fe-2a588585d943" config-ref="HTTP_Listener_config" path="/ui/*" >
+		<http:listener doc:name="Listener" doc:id="a5063ade-3085-4660-a1fe-2a588585d943" config-ref="HTTPS_Listener_config" path="/ui/*" >
 			<http:response statusCode="#[vars.httpStatus default 200]" >
 				<http:headers ><![CDATA[#[vars.outboundHeaders default {}]]]></http:headers>
 			</http:response>

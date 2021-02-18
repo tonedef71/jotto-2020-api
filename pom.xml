@@ -11,8 +11,25 @@
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <app.runtime>4.3.0-20201013</app.runtime>
     <mule.maven.plugin.version>3.3.5</mule.maven.plugin.version>
+    <gameUrl>https://jotto2020.us-e2.cloudhub.io/api/game/jotto</gameUrl>
   </properties>
   <build>
+    <resources>
+      <resource>
+        <directory>src/main/resources</directory>
+        <filtering>true</filtering>
+        <includes>
+          <include>**/*.js</include>
+        </includes>
+      </resource>
+      <resource>
+        <directory>src/main/resources</directory>
+        <filtering>false</filtering>
+        <excludes>
+          <exclude>**/*.js</exclude>
+        </excludes>
+      </resource>
+    </resources>
     <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -26,10 +43,6 @@
         <extensions>true</extensions>
         <configuration>
           <sharedLibraries>
-            <!-- sharedLibrary>
-              <groupId>mysql</groupId>
-              <artifactId>mysql-connector-java</artifactId>
-            </sharedLibrary-->
           </sharedLibraries>
         </configuration>
       </plugin>
@@ -66,17 +79,6 @@
       <version>1.4.1</version>
       <classifier>mule-plugin</classifier>
     </dependency>
-    <!-- dependency>
-            <groupId>org.mule.connectors</groupId>
-            <artifactId>mule-db-connector</artifactId>
-            <version>1.8.3</version>
-            <classifier>mule-plugin</classifier>
-        </dependency>
-    	<dependency>
-            <groupId>mysql</groupId>
-            <artifactId>mysql-connector-java</artifactId>
-            <version>8.0.22</version>
-        </dependency-->
     <dependency>
       <groupId>com.faunadb</groupId>
       <artifactId>faunadb-java</artifactId>

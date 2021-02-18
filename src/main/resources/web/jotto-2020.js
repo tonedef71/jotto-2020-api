@@ -400,7 +400,7 @@ module.exports = kind({
   },
   rendered: function() {
     this.inherited(arguments);
-    this.refresh();
+    //this.refresh();
   },
   processKeypress(key) {
     var ch = key;
@@ -444,7 +444,7 @@ module.exports = kind({
     if (this.guessData.length > 0) {
       this.guessData = [];
       this.$.prompt.setContent(Unicode.nbsp);
-      this.refresh();
+      //this.refresh();
     }
   },
   setPrompt: function(guess) {
@@ -620,8 +620,7 @@ module.exports = kind({
       handleAs: "json",
       onResponse: "processGameServerResponse",
       onError: "processError",
-      //url: "http://localhost:8081/api/game/jotto",
-      url: "http://jotto2020.us-e2.cloudhub.io/api/game/jotto",
+      url: "${gameUrl}",
       method: "POST",
       sync: false
     },
@@ -632,8 +631,7 @@ module.exports = kind({
       handleAs: "json",
       onResponse: "processGameServerResponse",
       onError: "processError",
-      //url: "http://localhost:8081/api/game/jotto/guess/",
-      url: "http://jotto2020.us-e2.cloudhub.io/api/game/jotto/guess/",
+      url: "${gameUrl}/guess/",
       method: "PUT",
       sync: false
     },
@@ -713,8 +711,8 @@ module.exports = kind({
             },
             {
               kind: JottoWord,
-              name: "jottoWord",
-              fit: true
+              name: "jottoWord"//,
+              //fit: true
             }
           ]
         },
@@ -735,7 +733,7 @@ module.exports = kind({
                 },
                 {
                   kind: JottoResult,
-                  fit: true,
+                  //fit: true,
                   result: "***o.",
                   guess: "jotox"
                 }
@@ -826,7 +824,7 @@ module.exports = kind({
     }
   ],
   create: function() {
-    this.log("MainView::create()");
+    //this.log("MainView::create()");
     this.inherited(arguments);
     this.data = [];
     this.guessHistory = null;
@@ -837,11 +835,11 @@ module.exports = kind({
     this.solution = "";
   },
   destroy: function() {
-    this.log("MainView::destroy()");
+    //this.log("MainView::destroy()");
     this.inherited(arguments);
   },
   rendered: function() {
-    this.log("MainView::rendered()");
+    //this.log("MainView::rendered()");
     this.inherited(arguments);
     this.$.guesses.setCount((this.data || []).length);
   },
@@ -911,7 +909,7 @@ module.exports = kind({
     }
   },
   invokeNewGameWebService: function(numLetters) {
-    this.log("invokeNewGameWebService: " + numLetters);
+    //this.log("invokeNewGameWebService: " + numLetters);
     var indexOfQuote = this.$.newGameWebService.url.lastIndexOf("?");
     var url = (indexOfQuote >= 0) ? this.$.newGameWebService.url.substring(0, indexOfQuote) : this.$.newGameWebService.url;
     url = url + "?letters=" + numLetters;
@@ -920,7 +918,7 @@ module.exports = kind({
     this.showSpinnerPopup();
   },
   invokeNewGuessWebService: function(guessText) {
-    this.log("invokeNewGuessWebService: " + guessText);
+    //this.log("invokeNewGuessWebService: " + guessText);
     var indexOfSlash = this.$.newGuessWebService.url.lastIndexOf("/");
     var url = (indexOfSlash >= 0) ? this.$.newGuessWebService.url.substring(0, indexOfSlash) : this.$.newGuessWebService.url;
     this.$.newGuessWebService.url = url + "/" + guessText;
@@ -931,7 +929,7 @@ module.exports = kind({
   },
   finishGuess: function(inSender, inEvent) {
     var guessText = inEvent.guess;
-    this.log("finishGuess: " + guessText);
+    //this.log("finishGuess: " + guessText);
     if (null == this.guessHistory[guessText]) {
       this.invokeNewGuessWebService(guessText);
     }
@@ -947,7 +945,7 @@ module.exports = kind({
     this.invokeNewGameWebService(numLetters);
   },
   setupGuess: function(inSender, inEvent) {
-    this.log("setupGuess...");
+    //this.log("setupGuess...");
     var index = inEvent.index;
     var item = inEvent.item;
     var datum = this.data[index];
@@ -962,7 +960,7 @@ module.exports = kind({
     return true;
   },
   newGame: function(inSender, inEvent) {
-    this.log("newGame click...");
+    //this.log("newGame click...");
     
     var gameStatus = this.get("gameStatus");
     if (gameStatus != 1) {
