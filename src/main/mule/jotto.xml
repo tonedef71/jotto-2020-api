@@ -25,7 +25,7 @@ output application/json
                         <ee:set-variable variableName="httpStatus">400</ee:set-variable>
                     </ee:variables>
                 </ee:transform>
-				<flow-ref doc:name="formatErrorPayload" doc:id="8da95b7e-cefe-41fb-9a4f-5212878c5828" name="formatErrorPayload"/>
+        <flow-ref doc:name="formatErrorPayload" doc:id="8da95b7e-cefe-41fb-9a4f-5212878c5828" name="formatErrorPayload"/>
             </on-error-propagate>
             <on-error-propagate type="APIKIT:NOT_FOUND">
                 <ee:transform xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
@@ -94,39 +94,51 @@ output application/json
             </on-error-propagate>
         </error-handler>
     </flow>
-    <flow name="staticHtml" doc:id="515573fc-1bea-4cc6-8058-1f03fa8c9a75" >
-		<http:listener doc:name="Listener" doc:id="a5063ade-3085-4660-a1fe-2a588585d943" config-ref="HTTP_Listener_config" path="/ui/*" >
-			<http:response statusCode="#[vars.httpStatus default 200]" >
-				<http:headers ><![CDATA[#[vars.outboundHeaders default {}]]]></http:headers>
-			</http:response>
-			<http:error-response statusCode="#[vars.httpStatus default 500]" >
-				<http:body ><![CDATA[#[payload]]]></http:body>
-				<http:headers ><![CDATA[#[vars.outboundHeaders default {}]]]></http:headers>
-			</http:error-response>
-		</http:listener>
-		<http:load-static-resource doc:name="Load static resource" doc:id="4cec5eab-65dd-4610-9430-ba351cf3d84c" resourceBasePath="${app.home}/web"/>
-	</flow>
-	<flow name="post:\game\jotto:jotto-config">
-        <logger level="INFO" message="post:\game\jotto:jotto-config" />
+    <flow name="ui" doc:id="345143f8-50a1-4654-92f3-57d6812641fc" >
+      <http:listener doc:name="Listener" doc:id="ccd4d0d4-5085-409f-a4d4-19f814f61ff8" config-ref="HTTP_Listener_config" path="/ui/*" >
+      <http:response statusCode="#[vars.httpStatus default 200]" >
+        <http:headers ><![CDATA[#[vars.outboundHeaders default {}]]]></http:headers>
+      </http:response>
+      <http:error-response statusCode="#[vars.httpStatus default 500]" >
+        <http:body ><![CDATA[#[payload]]]></http:body>
+        <http:headers ><![CDATA[#[vars.outboundHeaders default {}]]]></http:headers>
+      </http:error-response>
+    </http:listener>
+    <flow-ref doc:name="serveStaticContent" doc:id="3935f4a9-38ee-4740-8b86-a607803635c6" name="serveStaticContent" />
+  </flow>
+  <flow name="jotto2020" doc:id="515573fc-1bea-4cc6-8058-1f03fa8c9a75" >
+    <http:listener doc:name="Listener" doc:id="a5063ade-3085-4660-a1fe-2a588585d943" config-ref="HTTP_Listener_config" path="/jotto2020/*">
+      <http:response statusCode="#[vars.httpStatus default 200]">
+        <http:headers><![CDATA[#[vars.outboundHeaders default {}]]]></http:headers>
+      </http:response>
+      <http:error-response statusCode="#[vars.httpStatus default 500]">
+        <http:body><![CDATA[#[payload]]]></http:body>
+        <http:headers><![CDATA[#[vars.outboundHeaders default {}]]]></http:headers>
+      </http:error-response>
+    </http:listener>
+    <flow-ref doc:name="serveStaticContent" doc:id="ead2a384-6442-4710-8136-31135f85da8b" name="serveStaticContent" />
+  </flow>
+  <flow name="post:\game\jotto:jotto-config">
         <ee:transform doc:name="Set variables" doc:id="986e9ddd-890a-4a2e-859e-508b4d82f1b5">
             <ee:message />
             <ee:variables>
-				<ee:set-variable variableName="numLetters" ><![CDATA[%dw 2.0
+        <ee:set-variable variableName="numLetters" ><![CDATA[%dw 2.0
 output application/java
 ---
 ((attributes.queryParams default {}).letters default "5") as Number]]></ee:set-variable>
             </ee:variables>
         </ee:transform>
-		<try doc:name="Try" doc:id="ca1f0dfc-31f2-4be5-b7fe-0e5c15272fe3" >
-			<flow-ref doc:name="preparePuzzle" doc:id="30d5e8e2-fe33-4d7b-ab7a-3e2b997b81d6" name="preparePuzzle" />
-			<flow-ref doc:name="updateStateForTurn" doc:id="a381a61f-03da-4a5b-a695-69b1e018c7c1" name="updateStateForTurn"/>
-			<flow-ref doc:name="prepareGameStateResponse" doc:id="13a8ffe3-4576-4d1b-afb1-a6e3fad71d53" name="prepareGameStateResponse"/>
-			<error-handler >
-				<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="0a0bcff3-6f4f-459d-9d83-7b91f375fcf5" >
-					<flow-ref doc:name="prepareGameStateResponse" doc:id="4d6ba987-7053-4a06-9d47-8ed4d0d5607b" name="prepareGameStateResponse"/>
-				</on-error-propagate>
-			</error-handler>
-		</try>
+        <logger level="INFO" message="#['post:/game/jotto:jotto-config?letters=$(vars.numLetters)']" />
+    <try doc:name="Try" doc:id="ca1f0dfc-31f2-4be5-b7fe-0e5c15272fe3" >
+      <flow-ref doc:name="preparePuzzle" doc:id="30d5e8e2-fe33-4d7b-ab7a-3e2b997b81d6" name="preparePuzzle" />
+      <flow-ref doc:name="updateStateForTurn" doc:id="a381a61f-03da-4a5b-a695-69b1e018c7c1" name="updateStateForTurn"/>
+      <flow-ref doc:name="prepareGameStateResponse" doc:id="13a8ffe3-4576-4d1b-afb1-a6e3fad71d53" name="prepareGameStateResponse"/>
+      <error-handler >
+        <on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="0a0bcff3-6f4f-459d-9d83-7b91f375fcf5" >
+          <flow-ref doc:name="prepareGameStateResponse" doc:id="4d6ba987-7053-4a06-9d47-8ed4d0d5607b" name="prepareGameStateResponse"/>
+        </on-error-propagate>
+      </error-handler>
+    </try>
     </flow>
     <flow name="put:\game\jotto\guess\(guess):jotto-config">
         <ee:transform doc:name="Extract request variables">
@@ -134,28 +146,28 @@ output application/java
                 <ee:set-variable variableName="guess">attributes.uriParams.'guess'</ee:set-variable>
             </ee:variables>
         </ee:transform>
-        <logger level="INFO" message="put:\game\jotto\guess\(guess):jotto-config" />
-		<try doc:name="Try" doc:id="5ba1a66c-d699-4f7d-a7bc-a719fefef0f4" >
-			<ee:transform doc:name="Extract and decode game state" doc:id="b7cb7937-0d71-4c4e-9554-da51f0c4b3d2">
-			<ee:message>
-			</ee:message>
-			<ee:variables>
-				<ee:set-variable variableName="gameState"><![CDATA[%dw 2.0
+        <logger level="INFO" message="#['put:/game/jotto/guess/$(vars.guess):jotto-config']" />
+    <try doc:name="Try" doc:id="5ba1a66c-d699-4f7d-a7bc-a719fefef0f4" >
+      <ee:transform doc:name="Extract and decode game state" doc:id="b7cb7937-0d71-4c4e-9554-da51f0c4b3d2">
+      <ee:message>
+      </ee:message>
+      <ee:variables>
+        <ee:set-variable variableName="gameState"><![CDATA[%dw 2.0
 output application/java
 var sessionAttribute = (attributes.headers default {})["x-session"] default ""
 var sessionAttrDecoded = dw::core::Binaries::fromBase64(sessionAttribute)
 var gameState = if (isBlank(sessionAttrDecoded)) {} else read(sessionAttrDecoded, "application/json")
 ---
 gameState]]></ee:set-variable>
-			</ee:variables>
-		</ee:transform>
-			<flow-ref doc:name="validateGameNotOver" doc:id="e2ab18f3-fc3e-481c-916f-9494cdfb18bc" name="validateGameNotOver"/>
-			<flow-ref doc:name="validateGuess" doc:id="914139ed-bd13-4d7a-98d2-2bb9341338ec" name="validateGuess" />
-			<ee:transform doc:name="Retrieve puzzle word" doc:id="ad7fbd27-b43f-4285-a5f2-25f78d897a5d">
-			<ee:message>
-			</ee:message>
-			<ee:variables>
-				<ee:set-variable variableName="puzzleWord"><![CDATA[%dw 2.0
+      </ee:variables>
+    </ee:transform>
+      <flow-ref doc:name="validateGameNotOver" doc:id="e2ab18f3-fc3e-481c-916f-9494cdfb18bc" name="validateGameNotOver"/>
+      <flow-ref doc:name="validateGuess" doc:id="914139ed-bd13-4d7a-98d2-2bb9341338ec" name="validateGuess" />
+      <ee:transform doc:name="Retrieve puzzle word" doc:id="ad7fbd27-b43f-4285-a5f2-25f78d897a5d">
+      <ee:message>
+      </ee:message>
+      <ee:variables>
+        <ee:set-variable variableName="puzzleWord"><![CDATA[%dw 2.0
 import modules::shared_functions as shared
 output application/java
 var gameState = vars.gameState
@@ -164,15 +176,15 @@ var puzzleLength = stats.puzzleLength
 var puzzleIndex = stats.puzzleIndex
 ---
 shared::retrievePuzzleWord(puzzleLength, puzzleIndex)]]></ee:set-variable>
-			</ee:variables>
-		</ee:transform>
-			<flow-ref doc:name="updateStateForTurn" doc:id="0671636d-3cad-4e10-bcaa-6a8589696e94" name="updateStateForTurn" />
-			<flow-ref doc:name="prepareGameStateResponse" doc:id="92c5106a-391d-4fec-ae46-09e7eef48ef3" name="prepareGameStateResponse" />
-			<error-handler >
-				<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="7aee4aa0-dad8-498c-94ea-ba3fa96aacc5" >
-					<flow-ref doc:name="prepareGameStateResponse" doc:id="bbfd0ce9-1678-44eb-ab39-bb940092ec9f" name="prepareGameStateResponse"/>
-				</on-error-propagate>
-			</error-handler>
-		</try>
+      </ee:variables>
+    </ee:transform>
+      <flow-ref doc:name="updateStateForTurn" doc:id="0671636d-3cad-4e10-bcaa-6a8589696e94" name="updateStateForTurn" />
+      <flow-ref doc:name="prepareGameStateResponse" doc:id="92c5106a-391d-4fec-ae46-09e7eef48ef3" name="prepareGameStateResponse" />
+      <error-handler >
+        <on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="7aee4aa0-dad8-498c-94ea-ba3fa96aacc5" >
+          <flow-ref doc:name="prepareGameStateResponse" doc:id="bbfd0ce9-1678-44eb-ab39-bb940092ec9f" name="prepareGameStateResponse"/>
+        </on-error-propagate>
+      </error-handler>
+    </try>
     </flow>
 </mule>

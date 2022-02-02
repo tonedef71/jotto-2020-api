@@ -13,7 +13,7 @@
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <mule.maven.plugin.version>3.5.2</mule.maven.plugin.version>
     <gameUrl>http://jotto2020.us-e2.cloudhub.io</gameUrl>
-    <gameUrl>http://localhost:8081</gameUrl>
+    <!--gameUrl>http://localhost:8081</gameUrl-->
   </properties>
   <build>
     <resources>
