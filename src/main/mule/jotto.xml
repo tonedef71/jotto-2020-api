@@ -128,7 +128,7 @@ output application/java
 ((attributes.queryParams default {}).letters default "5") as Number]]></ee:set-variable>
             </ee:variables>
         </ee:transform>
-        <logger level="INFO" message="#['post:/game/jotto:jotto-config?letters=$(vars.numLetters)']" />
+        <logger level="INFO" message="#[joinBy(['post:/game/jotto:jotto-config?letters=$(vars.numLetters)', if (attributes.headers[&quot;x-real-ip&quot;]?) ' from [$(attributes.headers[&quot;x-real-ip&quot;])]' else ''], '')]" />
     <try doc:name="Try" doc:id="ca1f0dfc-31f2-4be5-b7fe-0e5c15272fe3" >
       <flow-ref doc:name="preparePuzzle" doc:id="30d5e8e2-fe33-4d7b-ab7a-3e2b997b81d6" name="preparePuzzle" />
       <flow-ref doc:name="updateStateForTurn" doc:id="a381a61f-03da-4a5b-a695-69b1e018c7c1" name="updateStateForTurn"/>
@@ -146,7 +146,7 @@ output application/java
                 <ee:set-variable variableName="guess">attributes.uriParams.'guess'</ee:set-variable>
             </ee:variables>
         </ee:transform>
-        <logger level="INFO" message="#['put:/game/jotto/guess/$(vars.guess):jotto-config']" />
+        <logger level="INFO" message="#[joinBy(['put:/game/jotto/guess/$(vars.guess):jotto-config', if (attributes.headers[&quot;x-real-ip&quot;]?) ' from [$(attributes.headers[&quot;x-real-ip&quot;])]' else ''], '')]" />
     <try doc:name="Try" doc:id="5ba1a66c-d699-4f7d-a7bc-a719fefef0f4" >
       <ee:transform doc:name="Extract and decode game state" doc:id="b7cb7937-0d71-4c4e-9554-da51f0c4b3d2">
       <ee:message>
