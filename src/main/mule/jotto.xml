@@ -118,6 +118,10 @@ output application/json
     </http:listener>
     <flow-ref doc:name="serveStaticContent" doc:id="ead2a384-6442-4710-8136-31135f85da8b" name="serveStaticContent" />
   </flow>
+  <flow name="root" doc:id="a8a7543a-5845-4f99-b926-5a9a778c79c2" >
+    <http:listener doc:name="Listener" doc:id="862eb152-09ec-41e4-9426-51ff3310dec7" config-ref="HTTP_Listener_config" path="/*"/>
+    <flow-ref doc:name="serveStaticContent" doc:id="92b192a8-1327-4881-a76e-6da80c87afe8" name="serveStaticContent"/>
+  </flow>
   <flow name="post:\game\jotto:jotto-config">
         <ee:transform doc:name="Set variables" doc:id="986e9ddd-890a-4a2e-859e-508b4d82f1b5">
             <ee:message />
