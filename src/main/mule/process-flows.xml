@@ -10,16 +10,51 @@ http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/
 http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mule/validation/current/mule-validation.xsd
 http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd">
   <sub-flow name="serveStaticContent" doc:id="fefdf70c-6d28-403f-8cd6-00d682032d76" >
-    <choice doc:name="Choice" doc:id="889b0277-3f25-4942-a7bf-5e49b6aeb051" >
+    <ee:transform doc:name="Determine if static resource should be retrieved" doc:id="37f899f3-261f-4866-abd1-5f334c1c5109">
+        <ee:message>
+        </ee:message>
+        <ee:variables>
+          <ee:set-variable variableName="loadResource"><![CDATA[%dw 2.0
+output application/java
+var resource = attributes.requestPath replace /\/jotto2020\// with ""
+---
+contains([
+"",
+"/",
+"/jotto2020",
+"robots.txt",
+"favicon.ico",
+"index.html",
+"assets/jotto_logo_small.png", 
+"onyx/images/gradient.png",
+"onyx/images/gradient-invert.png",
+"assets/QuickHowTo.png",
+"onyx/images/spinner-dark.gif"
+], 
+resource)]]></ee:set-variable>
+        </ee:variables>
+      </ee:transform>
+    <choice doc:name="Choice" doc:id="ebe88de3-023e-4230-b4e7-6c0b6bb26e7c">
+        <when expression="#[vars.loadResource]">
+        <choice doc:name="Choice" doc:id="889b0277-3f25-4942-a7bf-5e49b6aeb051">
       <when expression='#[!(attributes.headers.referer contains "jotto2020")]'>
-        <!--logger level="INFO" doc:name="Logger" message="#['Request [$(attributes.scheme):$(attributes.method)] to [$(app.name)] received from [$(attributes.remoteAddress)] for resource [$((attributes.requestUri))]']" /-->
         <logger level="INFO" doc:name="Logger" message="#[output application/json indent=false --- (attributes default {})]" />
       </when>
-      <otherwise >
-        <set-payload value="#[payload]" doc:name="Set Payload" doc:id="0ab87cf8-665f-4db7-9584-91d0e2c79469" />
+      <otherwise>
+        <set-payload value="#[payload]" doc:name="Do nothing" doc:id="0ab87cf8-665f-4db7-9584-91d0e2c79469" />
       </otherwise>
     </choice>
-    <http:load-static-resource doc:name="Load static resource" doc:id="4cec5eab-65dd-4610-9430-ba351cf3d84c" resourceBasePath="${app.home}/web" />
+        <try doc:name="Try" doc:id="45085bf2-61b8-498c-a00c-c11f76ed8b4f">
+      <http:load-static-resource doc:name="Load static resource" doc:id="4cec5eab-65dd-4610-9430-ba351cf3d84c" resourceBasePath="${app.home}/web" />
+      <error-handler>
+        <on-error-continue enableNotifications="false" logException="false" doc:name="Ignore static content errors" doc:id="b2cad158-c668-468b-a979-0d993776d520" when='#[error.errorType.namespace == "HTTP"]' />
+      </error-handler>
+    </try>
+        </when>
+        <otherwise>
+          <set-payload value="#[payload]" doc:name="Do nothing" doc:id="19501615-cd50-46d4-979a-cb5de24e2dbc" />
+        </otherwise>
+      </choice>
   </sub-flow>
   <sub-flow name="formatErrorPayload" doc:id="db3c4114-ee94-4d82-8f5d-c0c8fd719ece">
       <ee:transform doc:name="Build errorResponse" doc:id="9ad85319-2f01-4a0e-a921-fa1f65b25093">
